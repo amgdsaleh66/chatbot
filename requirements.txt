@@ -1,0 +1,30 @@
+# Core Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+websockets>=12.0
+
+# Auth & Security
+PyJWT>=2.8.0
+passlib[bcrypt]>=1.7.4
+
+# Database
+SQLAlchemy>=2.0.0
+aiosqlite>=0.19.0
+
+# HTTP Client (for Mistral API)
+httpx>=0.25.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# Vector Search (RAG)
+faiss-cpu>=1.7.4
+numpy>=1.24.0
+
+# Document Processing
+pdfplumber>=0.10.0
+PyPDF2>=3.0.0
+
+# Utilities
+python-magic>=0.4.27; sys_platform != 'win32'
