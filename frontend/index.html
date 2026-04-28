@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة دعم العملاء AI</title>
+  <style>
+    /* ─── Reset & Base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3352;
+      --accent: #5b6ef5;
+      --accent2: #7c8cff;
+      --text: #e8eaf6;
+      --text-muted: #8b92b8;
+      --user-bg: #2d3561;
+      --ai-bg: #1e2235;
+      --danger: #f05050;
+      --success: #4caf82;
+      --radius: 12px;
+      --font: 'Segoe UI', 'Cairo', system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar ───────────────────────────────────────────── */
+    #sidebar {
+      width: 280px;
+      min-width: 260px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .sidebar-title { font-size: 15px; font-weight: 700; }
+    .sidebar-sub { font-size: 11px; color: var(--text-muted); }
+
+    #user-info {
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 13px;
+      display: none;
+      gap: 8px;
+      align-items: center;
+    }
+    #user-info.show { display: flex; }
+    #username-label { font-weight: 600; }
+    #logout-btn {
+      margin-right: auto;
+      background: none; border: none;
+      color: var(--text-muted); cursor: pointer; font-size: 18px;
+      line-height: 1;
+    }
+    #logout-btn:hover { color: var(--danger); }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    #new-chat-btn {
+      background: var(--accent);
+      border: none; border-radius: var(--radius);
+      color: #fff; font-size: 13px; font-weight: 600;
+      padding: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background .2s;
+    }
+    #new-chat-btn:hover { background: var(--accent2); }
+
+    #conv-list { display: flex; flex-direction: column; gap: 4px; }
+    .conv-item {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: background .15s, color .15s;
+    }
+    .conv-item:hover { background: var(--surface2); color: var(--text); }
+
+    /* Upload Section */
+    #upload-section { display: flex; flex-direction: column; gap: 8px; }
+    #upload-label {
+      background: var(--surface2);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    #upload-label:hover { border-color: var(--accent); color: var(--accent2); }
+    #file-input { display: none; }
+    #upload-status { font-size: 11px; color: var(--text-muted); text-align: center; }
+    #upload-status.ok { color: var(--success); }
+    #upload-status.err { color: var(--danger); }
+
+    #rag-stats {
+      font-size: 11px; color: var(--text-muted);
+      background: var(--surface2); border-radius: 8px;
+      padding: 8px 10px; line-height: 1.8;
+    }
+
+    /* ─── Main Area ─────────────────────────────────────────── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── Login Screen ──────────────────────────────────────── */
+    #login-screen {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    #login-box h2 { font-size: 22px; text-align: center; }
+    #login-box p { font-size: 13px; color: var(--text-muted); text-align: center; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 13px; color: var(--text-muted); }
+    .form-group input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+      direction: ltr;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+
+    #login-btn {
+      background: var(--accent);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 15px; font-weight: 700;
+      padding: 12px; cursor: pointer;
+      transition: background .2s;
+    }
+    #login-btn:hover { background: var(--accent2); }
+    #login-btn:disabled { opacity: .5; cursor: not-allowed; }
+    #login-error { color: var(--danger); font-size: 12px; text-align: center; display: none; }
+
+    /* ─── Chat Area ─────────────────────────────────────────── */
+    #chat-screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #chat-screen.show { display: flex; }
+
+    #chat-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+    }
+    #conn-indicator {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--text-muted);
+      transition: background .3s;
+    }
+    #conn-indicator.online { background: var(--success); }
+    #conn-indicator.offline { background: var(--danger); }
+    #conn-status-text { font-size: 13px; color: var(--text-muted); }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .msg {
+      max-width: 78%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeUp .2s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user { align-self: flex-end; }
+    .msg.ai   { align-self: flex-start; }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user .msg-bubble {
+      background: var(--user-bg);
+      border-bottom-left-radius: 4px;
+    }
+    .msg.ai .msg-bubble {
+      background: var(--ai-bg);
+      border: 1px solid var(--border);
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+    .msg.user .msg-meta { text-align: left; }
+
+    .rag-badge {
+      display: inline-block;
+      font-size: 10px;
+      background: rgba(91, 110, 245, .18);
+      color: var(--accent2);
+      padding: 2px 7px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* Typing cursor */
+    .typing-cursor::after {
+      content: '▋';
+      animation: blink .7s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    #empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+    }
+    #empty-state .big-icon { font-size: 52px; }
+    #empty-state h3 { font-size: 18px; color: var(--text); }
+    #empty-state p { font-size: 13px; text-align: center; max-width: 300px; line-height: 1.6; }
+
+    /* ─── Input Bar ─────────────────────────────────────────── */
+    #input-bar {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    #msg-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      max-height: 140px;
+      line-height: 1.5;
+      font-family: var(--font);
+      transition: border-color .2s;
+    }
+    #msg-input:focus { border-color: var(--accent); }
+    #msg-input::placeholder { color: var(--text-muted); }
+
+    #send-btn {
+      background: var(--accent);
+      border: none; border-radius: 10px;
+      color: #fff; font-size: 18px;
+      width: 44px; height: 44px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s;
+    }
+    #send-btn:hover { background: var(--accent2); }
+    #send-btn:active { transform: scale(.95); }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ─── Toast ─────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #333; color: #fff; padding: 10px 20px;
+      border-radius: 8px; font-size: 13px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+      z-index: 9999;
+    }
+    #toast.show { opacity: 1; }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      #sidebar { display: none; }
+    }
+
+    /* ─── Scrollbar ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ Sidebar ════════════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">🤖</div>
+    <div>
+      <div class="sidebar-title">AI Support</div>
+      <div class="sidebar-sub">MVP v1.0</div>
+    </div>
+  </div>
+
+  <!-- User Info -->
+  <div id="user-info">
+    <span>👤</span>
+    <span id="username-label"></span>
+    <button id="logout-btn" title="تسجيل الخروج">⏏</button>
+  </div>
+
+  <!-- New Chat -->
+  <button id="new-chat-btn">＋ محادثة جديدة</button>
+
+  <!-- Conversation History -->
+  <div class="section-title">المحادثات السابقة</div>
+  <div id="conv-list"></div>
+
+  <!-- Upload -->
+  <div class="section-title">قاعدة المعرفة</div>
+  <div id="upload-section">
+    <label id="upload-label" for="file-input">
+      📁 رفع PDF / TXT<br/>
+      <small>اضغط لاختيار ملف</small>
+    </label>
+    <input id="file-input" type="file" accept=".pdf,.txt" />
+    <div id="upload-status"></div>
+  </div>
+
+  <!-- RAG Stats -->
+  <div id="rag-stats">جاري التحميل...</div>
+</aside>
+
+<!-- ═══ Main ════════════════════════════════════════════════════ -->
+<main id="main">
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div id="login-box">
+      <div style="text-align:center;font-size:48px">🤖</div>
+      <h2>منصة دعم العملاء AI</h2>
+      <p>تسجيل الدخول للبدء في الدردشة</p>
+
+      <div class="form-group">
+        <label>اسم المستخدم</label>
+        <input id="inp-username" type="text" placeholder="demo" value="demo" />
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input id="inp-password" type="password" placeholder="demo123" value="demo123" />
+      </div>
+      <div id="login-error">❌ بيانات الدخول غير صحيحة</div>
+      <button id="login-btn">تسجيل الدخول</button>
+      <p style="font-size:11px;color:var(--text-muted);text-align:center">
+        المستخدم التجريبي: demo / demo123
+      </p>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div id="chat-screen">
+    <div id="chat-header">
+      <div id="conn-indicator"></div>
+      <span id="conn-status-text">غير متصل</span>
+    </div>
+
+    <div id="messages">
+      <div id="empty-state">
+        <div class="big-icon">💬</div>
+        <h3>ابدأ محادثتك</h3>
+        <p>اكتب سؤالك في المربع أدناه.<br/>يمكنني مساعدتك بناءً على المستندات المرفوعة.</p>
+      </div>
+    </div>
+
+    <div id="input-bar">
+      <textarea
+        id="msg-input"
+        rows="1"
+        placeholder="اكتب رسالتك... (Enter للإرسال، Shift+Enter لسطر جديد)"
+      ></textarea>
+      <button id="send-btn" title="إرسال">➤</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="/chat.js"></script>
+</body>
+</html>
